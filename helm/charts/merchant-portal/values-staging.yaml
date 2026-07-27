@@ -1,0 +1,20 @@
+replicaCount: 2
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::000000000000:role/te-staging-merchant-portal-role
+
+ingress:
+  hosts:
+    - host: staging-portal.transactedge.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+config:
+  environment: staging
+  paymentsApiUrl: https://staging-api.transactedge.com/v1
+  nextAuthUrl: https://staging-portal.transactedge.com
+
+externalSecrets:
+  remoteSecretName: te-staging/merchant-portal

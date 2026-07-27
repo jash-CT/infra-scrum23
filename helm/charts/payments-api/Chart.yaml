@@ -1,0 +1,12 @@
+apiVersion: v2
+name: payments-api
+description: Helm chart for TransactEdge payments-api service
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - payments
+  - transactedge
+maintainers:
+  - name: Platform Engineering
+    email: platform@transactedge.com

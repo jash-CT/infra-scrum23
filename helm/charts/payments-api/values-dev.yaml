@@ -1,0 +1,43 @@
+replicaCount: 1
+
+image:
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/transactedge/payments-api
+  tag: latest
+  pullPolicy: Always
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::000000000000:role/te-dev-payments-api-role
+
+ingress:
+  hosts:
+    - host: dev-api.transactedge.com
+      paths:
+        - path: /v1
+          pathType: Prefix
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+config:
+  logLevel: debug
+  environment: dev
+  kafka:
+    brokers: b-1.te-dev-msk.abc123.c2.kafka.us-east-1.amazonaws.com:9098
+  database:
+    host: te-dev-postgres.abc123.us-east-1.rds.amazonaws.com
+  redis:
+    host: te-dev-redis.abc123.cache.amazonaws.com
+
+externalSecrets:
+  remoteSecretName: te-dev/payments-api

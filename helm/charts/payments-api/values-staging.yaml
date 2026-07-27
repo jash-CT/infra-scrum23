@@ -1,0 +1,34 @@
+replicaCount: 2
+
+image:
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/transactedge/payments-api
+  tag: latest
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::000000000000:role/te-staging-payments-api-role
+
+ingress:
+  hosts:
+    - host: staging-api.transactedge.com
+      paths:
+        - path: /v1
+          pathType: Prefix
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+
+config:
+  logLevel: info
+  environment: staging
+  kafka:
+    brokers: b-1.te-staging-msk.abc123.c2.kafka.us-east-1.amazonaws.com:9098
+  database:
+    host: te-staging-postgres.abc123.us-east-1.rds.amazonaws.com
+  redis:
+    host: te-staging-redis.abc123.cache.amazonaws.com
+
+externalSecrets:
+  remoteSecretName: te-staging/payments-api

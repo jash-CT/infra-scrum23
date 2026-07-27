@@ -1,0 +1,28 @@
+replicaCount: 1
+
+image:
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/transactedge/merchant-portal
+  tag: latest
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::000000000000:role/te-dev-merchant-portal-role
+
+ingress:
+  hosts:
+    - host: dev-portal.transactedge.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+autoscaling:
+  enabled: false
+
+config:
+  logLevel: debug
+  environment: dev
+  paymentsApiUrl: https://dev-api.transactedge.com/v1
+  nextAuthUrl: https://dev-portal.transactedge.com
+
+externalSecrets:
+  remoteSecretName: te-dev/merchant-portal
