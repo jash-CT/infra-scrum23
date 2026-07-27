@@ -1,0 +1,40 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Helm
+charts/*/charts/
+*.tgz
+
+# Local observability data
+prometheus-data/
+grafana-data/
+
+# Secrets (never commit)
+*.pem
+*.key
+credentials.json
+secrets.yaml
