@@ -1,0 +1,21 @@
+aws_region = "us-east-1"
+
+vpc_cidr              = "10.30.0.0/16"
+availability_zones    = ["us-east-1a", "us-east-1b", "us-east-1c"]
+private_subnet_cidrs  = ["10.30.1.0/24", "10.30.2.0/24", "10.30.3.0/24"]
+public_subnet_cidrs   = ["10.30.101.0/24", "10.30.102.0/24", "10.30.103.0/24"]
+database_subnet_cidrs = ["10.30.201.0/24", "10.30.202.0/24", "10.30.203.0/24"]
+
+kubernetes_version  = "1.29"
+node_instance_types = ["m6i.xlarge"]
+node_desired_size   = 6
+node_min_size       = 3
+node_max_size       = 20
+
+rds_instance_class       = "db.r6g.xlarge"
+elasticache_node_type    = "cache.r6g.xlarge"
+msk_broker_instance_type = "kafka.m5.xlarge"
+
+acm_certificate_arn            = "arn:aws:acm:us-east-1:000000000000:certificate/00000000-0000-0000-0000-000000000020"
+cloudfront_aliases             = ["api.transactedge.com", "portal.transactedge.com"]
+cloudfront_acm_certificate_arn = "arn:aws:acm:us-east-1:000000000000:certificate/00000000-0000-0000-0000-000000000021"
