@@ -166,8 +166,9 @@ See [docs/deployment-pipeline.md](docs/deployment-pipeline.md) for the full prom
 ## Documentation
 
 - [Architecture Overview](docs/architecture.md)
+- [Operations Runbook](docs/runbook.md) — platform on-call procedures, dashboards, and failure-mode response
 - [Deployment Pipeline](docs/deployment-pipeline.md)
-- [Disaster Recovery](docs/disaster-recovery.md) — RTO/RPO targets, backup strategy, runbooks
+- [Disaster Recovery](docs/disaster-recovery.md) — RTO/RPO targets, backup strategy, recovery procedures
 - [Architecture Decision Records](docs/adr/) — 6 ADRs covering EKS, Terraform, Helm, promotion, observability, secrets
 - [Secrets Management](k8s/secrets/README.md)
 - [Contributing](CONTRIBUTING.md)

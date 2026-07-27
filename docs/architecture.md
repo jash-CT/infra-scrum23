@@ -147,6 +147,7 @@ See [docs/deployment-pipeline.md](deployment-pipeline.md) for the full merge-to-
 
 ## Related Documents
 
+- [Operations Runbook](runbook.md)
 - [Disaster Recovery](disaster-recovery.md)
 - [Architecture Decision Records](adr/)
 - [Contributing](../CONTRIBUTING.md)
