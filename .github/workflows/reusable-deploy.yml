@@ -1,0 +1,89 @@
+name: Reusable Application Deploy
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        description: 'Service name (payments-api, fraud-engine, merchant-portal)'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment (dev, staging, production)'
+        required: true
+        type: string
+      image_tag:
+        description: 'Container image tag to deploy'
+        required: true
+        type: string
+      chart_version:
+        description: 'Helm chart version (from infra repo)'
+        required: false
+        type: string
+        default: '1.0.0'
+    secrets:
+      AWS_ACCOUNT_ID:
+        required: true
+      INFRA_REPO_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.service }} to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout infra charts
+        uses: actions/checkout@v4
+        with:
+          repository: transactedge/infra
+          token: ${{ secrets.INFRA_REPO_TOKEN }}
+          path: infra
+          sparse-checkout: |
+            helm/charts/${{ inputs.service }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/te-${{ inputs.environment }}-github-actions-deploy
+          aws-region: us-east-1
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name te-${{ inputs.environment == 'production' && 'prod' || inputs.environment }}-eks \
+            --region us-east-1
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Set namespace
+        id: ns
+        run: |
+          case "${{ inputs.service }}" in
+            payments-api) echo "namespace=payments" >> $GITHUB_OUTPUT ;;
+            fraud-engine) echo "namespace=fraud" >> $GITHUB_OUTPUT ;;
+            merchant-portal) echo "namespace=merchant" >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: Helm upgrade
+        run: |
+          helm upgrade --install ${{ inputs.service }} infra/helm/charts/${{ inputs.service }} \
+            --namespace ${{ steps.ns.outputs.namespace }} \
+            --create-namespace \
+            -f infra/helm/charts/${{ inputs.service }}/values-${{ inputs.environment }}.yaml \
+            --set image.tag=${{ inputs.image_tag }} \
+            --wait \
+            --timeout 10m
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/${{ inputs.service }} \
+            -n ${{ steps.ns.outputs.namespace }} \
+            --timeout=5m

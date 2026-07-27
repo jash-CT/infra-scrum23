@@ -1,0 +1,29 @@
+# TransactEdge Infrastructure Repository
+# Platform Engineering owns all infrastructure changes.
+# Security team must approve changes affecting IAM, networking, or secrets.
+
+* @transactedge/platform-team
+
+# Terraform modules and environment configs
+/terraform/ @transactedge/platform-team @transactedge/security
+
+# IAM and secrets management
+/terraform/modules/iam/ @transactedge/security @transactedge/platform-team
+/terraform/modules/secrets-manager/ @transactedge/security @transactedge/platform-team
+/k8s/secrets/ @transactedge/security @transactedge/platform-team
+
+# Helm charts for production services
+/helm/charts/payments-api/ @transactedge/platform-team @transactedge/payments-team
+/helm/charts/fraud-engine/ @transactedge/platform-team @transactedge/risk-team
+/helm/charts/merchant-portal/ @transactedge/platform-team @transactedge/merchant-experience
+
+# CI/CD workflows
+/.github/workflows/ @transactedge/platform-team
+
+# Alerting and observability
+/alerts/ @transactedge/platform-team @transactedge/sre
+/grafana/ @transactedge/platform-team @transactedge/sre
+/prometheus/ @transactedge/platform-team @transactedge/sre
+
+# Architecture decisions
+/docs/adr/ @transactedge/platform-team @transactedge/security

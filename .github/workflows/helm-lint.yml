@@ -1,0 +1,54 @@
+name: Helm Lint and Template
+
+on:
+  pull_request:
+    paths:
+      - 'helm/**'
+      - '.github/workflows/helm-lint.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'helm/**'
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-template:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        chart: [payments-api, fraud-engine, merchant-portal]
+        environment: [dev, staging, production]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Helm lint
+        run: helm lint helm/charts/${{ matrix.chart }} -f helm/charts/${{ matrix.chart }}/values-${{ matrix.environment }}.yaml
+
+      - name: Helm template
+        run: |
+          helm template ${{ matrix.chart }} helm/charts/${{ matrix.chart }} \
+            -f helm/charts/${{ matrix.chart }}/values-${{ matrix.environment }}.yaml \
+            --namespace ${{ matrix.chart == 'payments-api' && 'payments' || matrix.chart == 'fraud-engine' && 'fraud' || 'merchant' }} \
+            > /tmp/${{ matrix.chart }}-${{ matrix.environment }}.yaml
+
+      - name: Validate rendered manifests
+        run: |
+          pip install pyyaml
+          python -c "
+          import yaml, sys
+          with open('/tmp/${{ matrix.chart }}-${{ matrix.environment }}.yaml') as f:
+              for doc in yaml.safe_load_all(f):
+                  if doc is None: continue
+                  assert 'apiVersion' in doc and 'kind' in doc
+          print('Validation passed')
+          "

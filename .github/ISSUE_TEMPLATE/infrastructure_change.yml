@@ -1,0 +1,78 @@
+name: Infrastructure Change
+description: Request a planned infrastructure change with risk assessment
+title: "[Infra Change]: "
+labels: ["infrastructure-change", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for planned infrastructure changes (Terraform, Helm, networking, IAM).
+        All production changes require Platform Engineering and Security approval.
+
+  - type: input
+    id: change-id
+    attributes:
+      label: Change ID
+      description: Link to change management ticket (e.g., CHG-1234)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: change-type
+    attributes:
+      label: Change type
+      options:
+        - Standard (pre-approved, low risk)
+        - Normal (requires CAB review)
+        - Emergency (break-glass, post-incident)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Target environment
+      options:
+        - dev
+        - staging
+        - production
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope of change
+      description: Terraform modules, Helm charts, AWS resources, and application services affected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback plan
+      description: Steps to revert if the change fails.
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation plan
+      description: How will you verify the change succeeded? Include metrics, health checks, and smoke tests.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Change checklist
+      options:
+        - label: Terraform plan reviewed and attached
+          required: true
+        - label: Blast radius assessed for payments-api, fraud-engine, and merchant-portal
+          required: true
+        - label: Disaster recovery impact evaluated
+          required: false
+        - label: On-call team notified for production changes
+          required: false
