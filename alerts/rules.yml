@@ -1,0 +1,97 @@
+groups:
+  - name: transactedge-api
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{service="payments-api",status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{service="payments-api"}[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: payments
+          service: payments-api
+        annotations:
+          summary: "High error rate on payments-api"
+          description: "payments-api 5xx error rate is above 5% for 5 minutes (current value: {{ $value | humanizePercentage }})."
+          runbook_url: "https://wiki.transactedge.com/runbooks/high-error-rate"
+
+      - alert: ElevatedPaymentFailureRate
+        expr: |
+          (
+            sum(rate(payments_processed_total{status="failed"}[10m]))
+            /
+            sum(rate(payments_processed_total[10m]))
+          ) > 0.02
+        for: 10m
+        labels:
+          severity: critical
+          team: payments
+          service: payments-api
+        annotations:
+          summary: "Elevated payment failure rate"
+          description: "Payment failure rate exceeds 2% over 10 minutes (current value: {{ $value | humanizePercentage }})."
+          runbook_url: "https://wiki.transactedge.com/runbooks/payment-failures"
+
+      - alert: ElevatedFraudEngineLatency
+        expr: |
+          histogram_quantile(0.99, sum(rate(fraud_inference_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: risk
+          service: fraud-engine
+        annotations:
+          summary: "Elevated fraud-engine inference latency"
+          description: "fraud-engine P99 inference latency exceeds 500ms (current value: {{ $value | humanizeDuration }})."
+          runbook_url: "https://wiki.transactedge.com/runbooks/fraud-latency"
+
+      - alert: KafkaConsumerLag
+        expr: kafka_consumergroup_lag{consumergroup=~"payments-api|fraud-engine"} > 10000
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+          service: msk
+        annotations:
+          summary: "Kafka consumer lag elevated"
+          description: "Consumer group {{ $labels.consumergroup }} lag is {{ $value }} messages."
+          runbook_url: "https://wiki.transactedge.com/runbooks/kafka-lag"
+
+      - alert: DatabaseReplicationLag
+        expr: pg_replication_lag_seconds > 30
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+          service: rds
+        annotations:
+          summary: "Database replication lag elevated"
+          description: "PostgreSQL replication lag is {{ $value }}s, exceeding 30s threshold."
+          runbook_url: "https://wiki.transactedge.com/runbooks/db-replication-lag"
+
+      - alert: PodCrashLooping
+        expr: |
+          increase(kube_pod_container_status_restarts_total{namespace=~"payments|fraud|merchant"}[15m]) > 3
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Pod crash looping detected"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted more than 3 times in 15 minutes."
+          runbook_url: "https://wiki.transactedge.com/runbooks/pod-crash-loop"
+
+      - alert: MerchantPortalHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service="merchant-portal"}[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: merchant-experience
+          service: merchant-portal
+        annotations:
+          summary: "merchant-portal P95 latency elevated"
+          description: "merchant-portal P95 response time exceeds 2s (current value: {{ $value | humanizeDuration }})."

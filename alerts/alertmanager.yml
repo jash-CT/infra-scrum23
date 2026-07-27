@@ -1,0 +1,61 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+route:
+  receiver: platform-default
+  group_by: ['alertname', 'service', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - match:
+        severity: critical
+      receiver: pagerduty-critical
+      continue: true
+    - match:
+        team: payments
+      receiver: slack-payments
+    - match:
+        team: risk
+      receiver: slack-risk
+    - match:
+        team: merchant-experience
+      receiver: slack-merchant
+
+receivers:
+  - name: platform-default
+    slack_configs:
+      - channel: '#platform-alerts'
+        send_resolved: true
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+  - name: pagerduty-critical
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY}'
+        severity: critical
+        description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+
+  - name: slack-payments
+    slack_configs:
+      - channel: '#payments-oncall'
+        send_resolved: true
+
+  - name: slack-risk
+    slack_configs:
+      - channel: '#risk-oncall'
+        send_resolved: true
+
+  - name: slack-merchant
+    slack_configs:
+      - channel: '#merchant-experience'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: critical
+    target_match:
+      severity: warning
+    equal: ['alertname', 'service']

@@ -1,0 +1,54 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Active Database Connections",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "pg_stat_activity_count{service=\"rds\"}",
+          "legendFormat": "active connections"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "title": "Replication Lag",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "pg_replication_lag_seconds",
+          "legendFormat": "lag"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "title": "Connections by Application",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "pg_stat_activity_count{service=\"rds\"} by (application_name)",
+          "legendFormat": "{{ application_name }}"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["rds", "postgresql", "transactedge"],
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "RDS — Database Connections",
+  "uid": "te-db-connections",
+  "version": 1
+}
