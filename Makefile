@@ -1,4 +1,4 @@
-.PHONY: help tf-fmt tf-validate tf-plan tf-apply tf-lint helm-lint helm-template k8s-validate obs-up obs-down
+.PHONY: help tf-fmt tf-validate tf-plan tf-apply tf-lint tf-bootstrap-validate tf-remote-state-test tf-lock-preflight helm-lint helm-template k8s-validate obs-up obs-down
 
 ENV ?= dev
 CHART ?= payments-api
@@ -10,7 +10,14 @@ help: ## Show available targets
 tf-fmt: ## Format all Terraform files
 	terraform fmt -recursive terraform/
 
-tf-validate: ## Validate Terraform for all environments
+tf-bootstrap-validate: ## Validate remote state bootstrap (no AWS backend)
+	cd terraform/bootstrap && terraform init -backend=false -input=false && terraform validate
+
+tf-remote-state-test: ## Run SCRUM-23 remote state contract tests
+	python -m unittest discover -s tests/terraform -p 'test_*.py' -v
+
+tf-validate: ## Validate Terraform for bootstrap and all environments
+	@$(MAKE) tf-bootstrap-validate
 	@for env in dev staging production; do \
 		echo "==> Validating $$env"; \
 		cd terraform/environments/$$env && terraform init -backend=false -input=false && terraform validate && cd -; \
@@ -52,5 +59,12 @@ obs-down: ## Stop local observability stack
 obs-logs: ## Tail observability stack logs
 	docker compose logs -f
 
+bootstrap-state-plan: ## Plan bootstrap remote state backend (review before apply)
+	cd terraform/bootstrap && terraform init && terraform plan
+
+tf-lock-preflight: ## Fail if DynamoDB still holds Terraform locks (state precondition)
+	python scripts/check_terraform_locks.py
+
 bootstrap-state: ## Bootstrap Terraform remote state backend (run once per account)
+	@$(MAKE) tf-lock-preflight
 	cd terraform/bootstrap && terraform init && terraform apply

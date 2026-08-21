@@ -31,7 +31,7 @@ terraform/
     production/       # State key: environments/production/terraform.tfstate
 ```
 
-Remote state backend: S3 bucket (`transactedge-terraform-state`) with DynamoDB locking (`transactedge-terraform-locks`).
+Remote state backend: S3 bucket (`transactedge-terraform-state`) with DynamoDB locking (`transactedge-terraform-locks`), SSE-KMS via an explicit CMK, versioning enabled for rollback, and TLS-only bucket policy. Staging verification checklist: [scrum-23-remote-state-verification.md](../scrum-23-remote-state-verification.md).
 
 ## Rationale
 
