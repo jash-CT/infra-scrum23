@@ -87,3 +87,8 @@ requests.
 - CI run URL for bootstrap validate + staging plan comment
 - Screenshot or CLI output of lock contention from step 2
 - `get-bucket-versioning` / `list-object-versions` output from step 3
+
+## Makefile shortcuts
+- `make tf-remote-state-test` — contract tests (no AWS)
+- `make tf-bootstrap-validate` — validate bootstrap HCL locally
+- `make tf-lock-preflight` — check DynamoDB locks before apply
