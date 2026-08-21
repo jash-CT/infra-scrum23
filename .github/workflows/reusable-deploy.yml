@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout infra charts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: transactedge/infra
           token: ${{ secrets.INFRA_REPO_TOKEN }}
