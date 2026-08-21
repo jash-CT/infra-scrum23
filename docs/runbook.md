@@ -124,6 +124,9 @@ Dashboards (provisioned via `grafana/provisioning/`, sourced from
    `terraform force-unlock <lock-id>`.
 3. Run `terraform plan` after any manual AWS console change to detect and
    reconcile drift before the next scheduled apply.
+4. If state corruption is suspected, restore a prior object version from the
+   versioned `transactedge-terraform-state` bucket (see
+   [SCRUM-23 verification](scrum-23-remote-state-verification.md)).
 
 ### 7. WAF/ALB blocking legitimate merchant traffic
 

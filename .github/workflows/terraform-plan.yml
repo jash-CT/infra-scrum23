@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'terraform/**'
+      - 'tests/terraform/**'
       - '.github/workflows/terraform-plan.yml'
   workflow_dispatch:
     inputs:
@@ -22,9 +23,38 @@ permissions:
   id-token: write
 
 jobs:
+  bootstrap:
+    name: Validate remote state bootstrap (SCRUM-23)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/bootstrap
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.7.5
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive .
+
+      - name: Terraform Init (no backend)
+        run: terraform init -backend=false -input=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Remote state contract tests
+        working-directory: .
+        run: python -m unittest discover -s tests/terraform -p 'test_*.py' -v
+
   plan:
     name: Plan (${{ matrix.environment }})
     runs-on: ubuntu-latest
+    needs: bootstrap
     strategy:
       fail-fast: false
       matrix:
@@ -44,7 +74,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.7.5
 
@@ -70,7 +100,13 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const plan = fs.readFileSync('terraform/environments/${{ matrix.environment }}/plan.txt', 'utf8');
+            const { execSync } = require('child_process');
+            const planPath = 'terraform/environments/${{ matrix.environment }}/plan.txt';
+            const raw = fs.readFileSync(planPath, 'utf8');
+            const plan = execSync('python scripts/redact_terraform_plan.py', {
+              input: raw,
+              encoding: 'utf8',
+            });
             const truncated = plan.length > 60000 ? plan.substring(0, 60000) + '\n... (truncated)' : plan;
             const body = `### Terraform Plan — \`${{ matrix.environment }}\`\n\`\`\`\n${truncated}\n\`\`\``;
             github.rest.issues.createComment({

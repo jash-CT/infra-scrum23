@@ -7,6 +7,8 @@ metadata:
 data:
   LOG_LEVEL: {{ .Values.config.logLevel | quote }}
   ENVIRONMENT: {{ .Values.config.environment | quote }}
+  # Matches fraud-engine Settings.app_env (staging|production fail-closed on default secrets)
+  APP_ENV: {{ .Values.config.environment | quote }}
   HTTP_PORT: {{ .Values.config.httpPort | quote }}
   METRICS_PORT: {{ .Values.config.metricsPort | quote }}
   KAFKA_BROKERS: {{ .Values.config.kafka.brokers | quote }}

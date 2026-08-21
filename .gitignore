@@ -38,3 +38,8 @@ grafana-data/
 *.key
 credentials.json
 secrets.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+
